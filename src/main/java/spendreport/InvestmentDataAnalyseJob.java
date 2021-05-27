@@ -18,15 +18,10 @@
 
 package spendreport;
 
-import org.apache.flink.api.common.typeinfo.TypeInformation;
-import org.apache.flink.api.java.DataSet;
-import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.api.java.operators.DataSource;
-import org.apache.flink.api.java.tuple.Tuple1;
-import org.apache.flink.api.table.*;
-import org.apache.flink.api.table.sources.CsvTableSource;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.walkthrough.common.entity.Alert;
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.util.Collector;
 
 /**
  * Skeleton code for the datastream walkthrough
@@ -34,23 +29,19 @@ import org.apache.flink.walkthrough.common.entity.Alert;
 public class InvestmentDataAnalyseJob {
 	public static void main(String[] args) throws Exception {
 
-		final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
-		final BatchTableEnvironment btEnv = TableEnvironment.getTableEnvironment(env);
+		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		String mockDataPath = InvestmentDataAnalyseJob.class.getClassLoader().getResource("mock_data.csv").getPath();
-		CsvTableSource tableSource = new CsvTableSource(mockDataPath, "v1,v2,v3,v4,v5,v6".split(";"), new TypeInformation[]{Types.FLOAT(), Types.FLOAT(), Types.FLOAT(), Types.FLOAT(), Types.FLOAT(), Types.FLOAT()});
+		DataStream<Float[]> dataStream = env.readTextFile("src/main/resources/mock_data.csv")
+				.flatMap(new Splitter())
+				.keyBy(value -> value[0])	//TODO add some key to data, like datetime of entry. Use it here instead of value[0]
+				.sum(1);	//TODO ?
 
-		btEnv.registerTableSource("mockData", tableSource);
-		Table data = btEnv.scan("data");
-
-
-		DataSource<Tuple1<Float>> mockData = env.readCsvFile("file:///mock_data.csv").types(Float.class);
+		dataStream.print();
+		env.execute("Fraud Detection");
 
 
 
-
-
-		DataStream<Tuple1<Float>> transactions = env
+		/*DataStream<Tuple1<Float>> transactions = env
 			.addSource(mockData)
 			.name("transactions");
 
@@ -61,8 +52,25 @@ public class InvestmentDataAnalyseJob {
 
 		alerts
 			.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
-			.name("send-alerts");
+			.name("send-alerts");*/
+	}
 
-		env.execute("Fraud Detection");
+	public static class Splitter implements FlatMapFunction<String, Float[]> {
+
+		@Override
+		public void flatMap(String text, Collector<Float[]> output) throws Exception {
+
+			for (String line: text.split("\n")) {
+
+				Float[] dataVector = new Float[6];
+
+				String[] elements = line.split(";");
+				for (int i = 0; i < elements.length; i++) {
+					dataVector[i] = Float.parseFloat(elements[i]);
+				}
+
+				output.collect(dataVector);
+			}
+		}
 	}
 }

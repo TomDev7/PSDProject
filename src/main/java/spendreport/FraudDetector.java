@@ -31,19 +31,18 @@ import org.apache.flink.walkthrough.common.entity.Transaction;
 /**
  * Skeleton code for implementing a fraud detector.
  */
-public class FraudDetector extends KeyedProcessFunction<Long, Tuple1<Float>, Alert> {
+public class FraudDetector extends KeyedProcessFunction<Long, Float[], Alert> {
 
 	private static final long serialVersionUID = 1L;
+	//private transient ValueState<Boolean> flagState;
 
-	private transient ValueState<Boolean> flagState;
+	private float[][] recentVectors = new float[30][6];
 
-	private static final double SMALL_AMOUNT = 1.00;
-	private static final double LARGE_AMOUNT = 500.00;
-	private static final long ONE_MINUTE = 60 * 1000;
+
 
 	@Override
 	public void processElement(
-			Tuple1<Float> dataVector,
+			Float[] dataVector,
 			Context context,
 			Collector<Alert> collector) throws Exception {
 
@@ -55,11 +54,11 @@ public class FraudDetector extends KeyedProcessFunction<Long, Tuple1<Float>, Ale
 	@Override
 	public void open(Configuration parameters) {	//rozpoczęcie procesu przetwarzania
 
-		ValueStateDescriptor<Boolean> flagDescriptor = new ValueStateDescriptor<>(
+		/*ValueStateDescriptor<Boolean> flagDescriptor = new ValueStateDescriptor<>(
 				"flag",
 				Types.BOOLEAN
-		);
+		);*/
 
-		flagState = getRuntimeContext().getState(flagDescriptor);
+		//flagState = getRuntimeContext().getState(flagDescriptor);
 	}
 }
