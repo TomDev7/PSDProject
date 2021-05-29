@@ -56,6 +56,7 @@ public class FraudDetectionJob {
 		env.execute("Data analyse");
 	}
 
+	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
 	public static class Splitter implements FlatMapFunction<String, Tuple6<Float, Float, Float, Float, Float, Float>> {
 
 		@Override
