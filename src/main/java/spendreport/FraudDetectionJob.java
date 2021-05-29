@@ -19,6 +19,7 @@
 package spendreport;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
@@ -35,20 +36,13 @@ public class FraudDetectionJob {
 
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DataStream<Float[]> dataStream = env.readTextFile("src/main/resources/mock_data.csv")
-				.flatMap(new Splitter())
-				.keyBy(value -> value[0]);	//TODO add some key to data, like datetime of entry. Use it here instead of value[0]
+		DataStream<Tuple6<Float, Float, Float, Float, Float, Float>> dataStream = env.readTextFile("src/main/resources/mock_data.csv")
+				.flatMap(new Splitter());
+				//.keyBy(value -> value.f0);	//TODO add some key to data, like datetime of entry. Use it here instead of value[0]
 
 
-		System.out.println("dataStream: ");
-		dataStream.print();
-		env.execute("Data analyse");
-
-
-
-		/*DataStream<Tuple1<Float>> transactions = env
-			.addSource(mockData)
-			.name("transactions");*/
+		//System.out.println("dataStream: ");
+		//dataStream.print();
 
 		DataStream<Alert> alerts = dataStream
 				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
@@ -57,12 +51,15 @@ public class FraudDetectionJob {
 		alerts
 				.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
 				.name("send-alerts");
+
+
+		env.execute("Data analyse");
 	}
 
-	public static class Splitter implements FlatMapFunction<String, Float[]> {
+	public static class Splitter implements FlatMapFunction<String, Tuple6<Float, Float, Float, Float, Float, Float>> {
 
 		@Override
-		public void flatMap(String text, Collector<Float[]> output) throws Exception {
+		public void flatMap(String text, Collector<Tuple6<Float, Float, Float, Float, Float, Float>> output) throws Exception {
 
 			for (String line: text.split("\n")) {
 
@@ -73,7 +70,7 @@ public class FraudDetectionJob {
 					dataVector[i] = Float.parseFloat(elements[i]);
 				}
 
-				output.collect(dataVector);
+				output.collect(Tuple6.of(dataVector[0], dataVector[1], dataVector[2], dataVector[3], dataVector[4], dataVector[5]));
 			}
 		}
 	}
