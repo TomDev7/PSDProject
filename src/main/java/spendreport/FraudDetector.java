@@ -19,15 +19,14 @@
 package spendreport;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
-import org.apache.flink.walkthrough.common.entity.Alert;
 
 
-public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>, Tuple2<Integer, Float>, Integer, GlobalWindow> {
+public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>, Tuple7<Integer, Float, Float, Float, Float, Float, Float>, Integer, GlobalWindow> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -59,15 +58,23 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 	}
 
 	@Override
-	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Float>> input, Collector<Tuple2<Integer, Float>> out) throws Exception {
+	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Float>> input, Collector<Tuple7<Integer, Float, Float, Float, Float, Float, Float>> out) throws Exception {
 
 		System.out.println("process window: " + context.window());
-		float count = 0;
+
+		// Wartosci ponizej odpowiadaja nazwami podpunktom z zadania
+		float a;
+		float b;
+		float c;
+		float d;
+		float e;
+		float f;
+
 		for (Tuple2<Integer, Float> in: input) {
-			count += in.f1;
+			//count += in.f1;
 		}
 //		out.collect("Window: " + context.window() + "count: " + count);
-		out.collect(Tuple2.of(key, Float.valueOf(count)));
+		out.collect(Tuple7.of(key, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 	}
 
 }
