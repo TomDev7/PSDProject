@@ -18,42 +18,34 @@
 
 package spendreport;
 
-import org.apache.flink.api.common.state.ValueState;
-import org.apache.flink.api.common.state.ValueStateDescriptor;
-import org.apache.flink.api.common.typeinfo.Types;
-import org.apache.flink.api.java.tuple.Tuple6;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
-import org.apache.flink.streaming.api.functions.ProcessFunction;
+import org.apache.flink.streaming.api.datastream.WindowedStream;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
+import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 import org.apache.flink.walkthrough.common.entity.Alert;
-import org.apache.flink.walkthrough.common.entity.Transaction;
 
-/**
- * Skeleton code for implementing a fraud detector.
- */
-public class FraudDetector extends ProcessFunction<Tuple6<Float, Float, Float, Float, Float, Float>, Alert> {
+
+public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>, Tuple2<Integer, Float>, Integer, GlobalWindow> {
 
 	private static final long serialVersionUID = 1L;
-	//private transient ValueState<Boolean> flagState;
-
-	private float[][] recentVectors = new float[30][6];
 
 
-
-	@Override
+	/*@Override
 	public void processElement(
-			Tuple6<Float, Float, Float, Float, Float, Float> dataTuple,
+			Tuple2<Integer, Float> dataTuple,
 			Context context,
 			Collector<Alert> collector) throws Exception {
 
 		System.out.println("dataVector: " + dataTuple.toString());
+
 		Alert alert = new Alert();
 		alert.setId(Long.parseLong(dataTuple.f0.toString()));
 		collector.collect(alert);
 
 
-	}
+	}*/
 
 	@Override
 	public void open(Configuration parameters) {	//rozpoczęcie procesu przetwarzania
@@ -65,4 +57,17 @@ public class FraudDetector extends ProcessFunction<Tuple6<Float, Float, Float, F
 
 		//flagState = getRuntimeContext().getState(flagDescriptor);
 	}
+
+	@Override
+	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Float>> input, Collector<Tuple2<Integer, Float>> out) throws Exception {
+
+		System.out.println("process window: " + context.window());
+		float count = 0;
+		for (Tuple2<Integer, Float> in: input) {
+			count += in.f1;
+		}
+//		out.collect("Window: " + context.window() + "count: " + count);
+		out.collect(Tuple2.of(key, Float.valueOf(count)));
+	}
+
 }

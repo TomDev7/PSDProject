@@ -19,6 +19,7 @@
 package spendreport;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -36,42 +37,41 @@ public class FraudDetectionJob {
 
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		DataStream<Tuple6<Float, Float, Float, Float, Float, Float>> dataStream = env.readTextFile("src/main/resources/mock_data.csv")
-				.flatMap(new Splitter());
-				//.keyBy(value -> value.f0);	//TODO add some key to data, like datetime of entry. Use it here instead of value[0]
+		// test
+		DataStream<Tuple2<Integer, Float>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
+				.flatMap(new Splitter())
+				.keyBy(value -> value.f0)
+				.countWindow(30, 1)
+				.process(new FraudDetector());
+		// end test
 
+		System.out.println("dataStream: ");
+		System.out.println(dataStream.toString());
+		dataStream.print();
 
-		//System.out.println("dataStream: ");
-		//dataStream.print();
-
-		DataStream<Alert> alerts = dataStream
-				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
-				.name("data-analyser");
-
-		alerts
-				.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
-				.name("send-alerts");
+//		DataStream<Alert> alerts = dataStream
+//				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
+//				.name("data-analyser");
+//
+//		alerts.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
+//				.name("data-analyse-alerts");
 
 
 		env.execute("Data analyse");
 	}
 
 	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
-	public static class Splitter implements FlatMapFunction<String, Tuple6<Float, Float, Float, Float, Float, Float>> {
+	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Float>> {
 
 		@Override
-		public void flatMap(String text, Collector<Tuple6<Float, Float, Float, Float, Float, Float>> output) throws Exception {
+		public void flatMap(String text, Collector<Tuple2<Integer, Float>> output) throws Exception {
 
 			for (String line: text.split("\n")) {
 
-				Float[] dataVector = new Float[6];
-
 				String[] elements = line.split(";");
 				for (int i = 0; i < elements.length; i++) {
-					dataVector[i] = Float.parseFloat(elements[i]);
+					output.collect(Tuple2.of(Integer.valueOf(i), Float.valueOf(elements[i])));
 				}
-
-				output.collect(Tuple6.of(dataVector[0], dataVector[1], dataVector[2], dataVector[3], dataVector[4], dataVector[5]));
 			}
 		}
 	}
