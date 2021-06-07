@@ -23,6 +23,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingTimeWindows;
 import org.apache.flink.util.Collector;
 import org.apache.flink.walkthrough.common.sink.AlertSink;
 import org.apache.flink.walkthrough.common.entity.Alert;
@@ -59,6 +60,12 @@ public class FraudDetectionJob {
 
 		env.execute("Data analyse");
 	}
+
+//	public WindowedStream<T, KEY, GlobalWindow> countWindow(long size, long slide) {
+//		return window(GlobalWindows.create())
+//				.evictor(CountEvictor.of(size))
+//				.trigger(CountTrigger.of(slide));
+//	}
 
 	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
 	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Float>> {
