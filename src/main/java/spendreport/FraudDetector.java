@@ -25,56 +25,126 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 
 public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>, Tuple7<Integer, Float, Float, Float, Float, Float, Float>, Integer, GlobalWindow> {
 
 	private static final long serialVersionUID = 1L;
 
 
-	/*@Override
-	public void processElement(
-			Tuple2<Integer, Float> dataTuple,
-			Context context,
-			Collector<Alert> collector) throws Exception {
-
-		System.out.println("dataVector: " + dataTuple.toString());
-
-		Alert alert = new Alert();
-		alert.setId(Long.parseLong(dataTuple.f0.toString()));
-		collector.collect(alert);
-
-
-	}*/
-
 	@Override
 	public void open(Configuration parameters) {	//rozpoczęcie procesu przetwarzania
 
-		/*ValueStateDescriptor<Boolean> flagDescriptor = new ValueStateDescriptor<>(
-				"flag",
-				Types.BOOLEAN
-		);*/
 
-		//flagState = getRuntimeContext().getState(flagDescriptor);
 	}
 
 	@Override
 	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Float>> input, Collector<Tuple7<Integer, Float, Float, Float, Float, Float, Float>> out) throws Exception {
 
-		System.out.println("process window: " + context.window());
+		//System.out.println("process window: " + context.window());
+
+		ArrayList<Float> values = new ArrayList<>();
 
 		// Wartosci ponizej odpowiadaja nazwami podpunktom z zadania
-		float a;
-		float b;
-		float c;
-		float d;
-		float e;
-		float f;
+		float a = 0.0f;	//srednia
+		float b = 0.0f;	//mediana
+		float c = 0.0f;	//kwantyl
+		float d = 0.0f;	//srednia z 10%
+		float e = 0.0f;	//miara bezpieczenstwa na odchyleniu
+		float f = 0.0f;	//miara bezpieczenstwa na sredniej
 
 		for (Tuple2<Integer, Float> in: input) {
-			//count += in.f1;
+			values.add(in.f1);
 		}
+
+		if (values.size() < 30) {
+			return;
+		}
+
+		System.out.println("window (" + values.size() + ") : " + values.toString());
+
+		a = calculateAverage(values);
+		b = calculateMedian(values);
+		c = calculateQuantile(values, 0.1f);	//?
+		d = calculateD(values);
+		e = calculateE(values, a);
+		f = calculateF(values, a);
+
 //		out.collect("Window: " + context.window() + "count: " + count);
-		out.collect(Tuple7.of(key, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+		out.collect(Tuple7.of(key, a, b, c, d, e, f));
 	}
 
+	float calculateAverage(ArrayList<Float> values) {
+
+		float sum = 0;
+
+		for (float v : values) {
+
+			sum += v;
+		}
+
+		return sum/values.size();
+	}
+
+	float calculateMedian(ArrayList<Float> values) {
+
+		Collections.sort(values);
+
+		int middle = values.size() / 2;
+		if (values.size()%2 == 1) {
+			return values.get(middle);
+		} else {
+			return (values.get(middle-1) + values.get(middle)) / 2.0f;
+		}
+	}
+
+	float calculateQuantile(ArrayList<Float> values, float quantile) {
+
+		Collections.sort(values);
+
+		return values.get((int)(values.size() * (1 - quantile)));
+	}
+
+	float calculateD(ArrayList<Float> values) {
+
+		Collections.sort(values);
+
+		int pos = (int) (values.size() * 0.1);
+		float sum = 0.0f;
+
+		for (int i = 0; i <= pos; i++) {
+			sum += values.get(i);
+		}
+
+		return sum/pos;
+	}
+
+	float calculateE(ArrayList<Float> values, float average) {
+
+		float pSum = 0.0f;
+
+		for (float v : values) {
+
+			pSum += Math.abs(average - v);
+		}
+
+		return average - (1/(2*values.size())) * pSum;
+	}
+
+	float calculateF(ArrayList<Float> values, float average) {
+
+		float pSum = 0.0f;
+
+		for (float v1 : values) {
+			for (float v2 : values) {
+				pSum += Math.abs(v1 - v2);
+			}
+		}
+
+		return average - (1/(2*values.size()^2));
+	}
 }

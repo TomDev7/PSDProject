@@ -21,6 +21,7 @@ package spendreport;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple6;
+import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingTimeWindows;
@@ -39,7 +40,7 @@ public class FraudDetectionJob {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		// test
-		DataStream<Tuple2<Integer, Float>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
+		DataStream<Tuple7<Integer, Float, Float, Float, Float, Float, Float>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
 				.flatMap(new Splitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
@@ -75,7 +76,7 @@ public class FraudDetectionJob {
 
 			for (String line: text.split("\n")) {
 
-				String[] elements = line.split(";");
+				String[] elements = line.split(",");
 				for (int i = 0; i < elements.length; i++) {
 					output.collect(Tuple2.of(Integer.valueOf(i), Float.valueOf(elements[i])));
 				}
