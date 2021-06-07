@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 
-public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>, Tuple7<Integer, Float, Float, Float, Float, Float, Float>, Integer, GlobalWindow> {
+public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>, Tuple7<Integer, Double, Double, Double, Double, Double, Double>, Integer, GlobalWindow> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -43,21 +43,21 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 	}
 
 	@Override
-	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Float>> input, Collector<Tuple7<Integer, Float, Float, Float, Float, Float, Float>> out) throws Exception {
+	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Double>> input, Collector<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> out) throws Exception {
 
 		//System.out.println("process window: " + context.window());
 
-		ArrayList<Float> values = new ArrayList<>();
+		ArrayList<Double> values = new ArrayList<>();
 
 		// Wartosci ponizej odpowiadaja nazwami podpunktom z zadania
-		float a = 0.0f;	//srednia
-		float b = 0.0f;	//mediana
-		float c = 0.0f;	//kwantyl
-		float d = 0.0f;	//srednia z 10%
-		float e = 0.0f;	//miara bezpieczenstwa na odchyleniu
-		float f = 0.0f;	//miara bezpieczenstwa na sredniej
+		Double a = 0.0;	//srednia
+		Double b = 0.0;	//mediana
+		Double c = 0.0;	//kwantyl
+		Double d = 0.0;	//srednia z 10%
+		Double e = 0.0;	//miara bezpieczenstwa na odchyleniu
+		Double f = 0.0;	//miara bezpieczenstwa na sredniej
 
-		for (Tuple2<Integer, Float> in: input) {
+		for (Tuple2<Integer, Double> in: input) {
 			values.add(in.f1);
 		}
 
@@ -69,7 +69,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 
 		a = calculateAverage(values);
 		b = calculateMedian(values);
-		c = calculateQuantile(values, 0.1f);	//?
+		c = calculateQuantile(values, 0.1);	//?
 		d = calculateD(values);
 		e = calculateE(values, a);
 		f = calculateF(values, a);
@@ -78,11 +78,11 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));
 	}
 
-	float calculateAverage(ArrayList<Float> values) {
+	Double calculateAverage(ArrayList<Double> values) {
 
-		float sum = 0;
+		Double sum = 0.0;
 
-		for (float v : values) {
+		for (Double v : values) {
 
 			sum += v;
 		}
@@ -90,7 +90,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 		return sum/values.size();
 	}
 
-	float calculateMedian(ArrayList<Float> values) {
+	Double calculateMedian(ArrayList<Double> values) {
 
 		Collections.sort(values);
 
@@ -102,19 +102,19 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 		}
 	}
 
-	float calculateQuantile(ArrayList<Float> values, float quantile) {
+	Double calculateQuantile(ArrayList<Double> values, Double quantile) {
 
 		Collections.sort(values);
 
 		return values.get((int)(values.size() * (1 - quantile)));
 	}
 
-	float calculateD(ArrayList<Float> values) {
+	Double calculateD(ArrayList<Double> values) {
 
 		Collections.sort(values);
 
 		int pos = (int) (values.size() * 0.1);
-		float sum = 0.0f;
+		Double sum = 0.0;
 
 		for (int i = 0; i <= pos; i++) {
 			sum += values.get(i);
@@ -123,11 +123,11 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 		return sum/pos;
 	}
 
-	float calculateE(ArrayList<Float> values, float average) {
+	Double calculateE(ArrayList<Double> values, Double average) {
 
-		float pSum = 0.0f;
+		Double pSum = 0.0;
 
-		for (float v : values) {
+		for (Double v : values) {
 
 			pSum += Math.abs(average - v);
 		}
@@ -135,12 +135,12 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Float>,
 		return average - (1/(2*values.size())) * pSum;
 	}
 
-	float calculateF(ArrayList<Float> values, float average) {
+	Double calculateF(ArrayList<Double> values, Double average) {
 
-		float pSum = 0.0f;
+		Double pSum = 0.0;
 
-		for (float v1 : values) {
-			for (float v2 : values) {
+		for (Double v1 : values) {
+			for (Double v2 : values) {
 				pSum += Math.abs(v1 - v2);
 			}
 		}

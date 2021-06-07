@@ -40,7 +40,7 @@ public class FraudDetectionJob {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 		// test
-		DataStream<Tuple7<Integer, Float, Float, Float, Float, Float, Float>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
+		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources/mock_data.csv")
 				.flatMap(new Splitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
@@ -69,16 +69,16 @@ public class FraudDetectionJob {
 //	}
 
 	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
-	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Float>> {
+	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Double>> {
 
 		@Override
-		public void flatMap(String text, Collector<Tuple2<Integer, Float>> output) throws Exception {
+		public void flatMap(String text, Collector<Tuple2<Integer, Double>> output) throws Exception {
 
 			for (String line: text.split("\n")) {
 
 				String[] elements = line.split(",");
 				for (int i = 0; i < elements.length; i++) {
-					output.collect(Tuple2.of(Integer.valueOf(i), Float.valueOf(elements[i])));
+					output.collect(Tuple2.of(Integer.valueOf(i), Double.valueOf(elements[i])));
 				}
 			}
 		}
