@@ -18,6 +18,7 @@
 
 package spendreport;
 
+import com.sun.org.apache.bcel.internal.generic.BIPUSH;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
@@ -25,8 +26,12 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import static org.apache.flink.shaded.curator4.com.google.common.math.Quantiles.percentiles;
 
 
 public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>, Tuple7<Integer, Double, Double, Double, Double, Double, Double>, Integer, GlobalWindow> {
@@ -61,6 +66,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		Double e = 0.0;	//miara bezpieczenstwa na odchyleniu
 		Double f = 0.0;	//miara bezpieczenstwa na sredniej
 
+
 		for (Tuple2<Integer, Double> in: input) {
 			values.add(in.f1);
 		}
@@ -73,10 +79,10 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 
 		a = calculateAverage(values);
 		b = calculateMedian(values);
-		c = calculateQuantile(values, 0.1);	//?
-		d = calculateD(values);
-		e = calculateE(values, a);
-		f = calculateF(values, a);
+		c = calculateQuantile(values, 10);	//?
+		d = calculateAverageOfLower10Perc(values);
+		e = calculateMB1(values, a);
+		f = calculateMB2(values, a);
 
 //		out.collect("Window: " + context.window() + "count: " + count);
 		switch (key){
@@ -141,49 +147,66 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		}
 	}
 
-	Double calculateQuantile(ArrayList<Double> values, Double quantile) {
+	Double calculateQuantile(ArrayList<Double> values, int quantile) {
 
-		Collections.sort(values);
+		double quantile10 = percentiles().index(quantile).compute(values);
+//		Collections.sort(values);
+//		Double position = ( values.size() * quantile);
+//		int intPos = (int) Math.round(position);
 
-		return values.get((int)(values.size() * (1 - quantile)));
+		return quantile10;
 	}
 
-	Double calculateD(ArrayList<Double> values) {
+	Double calculateAverageOfLower10Perc(ArrayList<Double> values) {
 
 		Collections.sort(values);
+		int lower10PercValuesIdx = values.size() / 10;
 
-		int pos = (int) (values.size() * 0.1);
 		Double sum = 0.0;
 
-		for (int i = 0; i <= pos; i++) {
+		for (int i = 0; i < lower10PercValuesIdx; i++) {
 			sum += values.get(i);
 		}
 
-		return sum/pos;
+		return sum/lower10PercValuesIdx;
 	}
 
-	Double calculateE(ArrayList<Double> values, Double average) {
+	Double calculateMB1(ArrayList<Double> values, Double average) {
 
-		Double pSum = 0.0;
-
-		for (Double v : values) {
-
-			pSum += Math.abs(average - v);
+		BigDecimal pSum = new BigDecimal(0);
+		BigDecimal val = null;
+		BigDecimal abs = null;
+		BigDecimal averageBD = new BigDecimal(average);
+		for(Double v: values) {
+			val = new BigDecimal(v);
+			abs = averageBD.subtract(val).abs();
+			pSum = pSum.add(abs);
 		}
-
-		return average - (1/(2*values.size())) * pSum;
+		BigDecimal result = averageBD.subtract(pSum.divide(BigDecimal.valueOf(2*values.size()), 10, RoundingMode.HALF_UP));
+		return result.doubleValue();
+//		Double pSum = 0.0;
+//
+//		for (Double v : values) {
+//
+//			pSum = pSum + Math.abs(average - v);
+//		}
+//
+//		return average - (pSum/(2*values.size()));
 	}
 
-	Double calculateF(ArrayList<Double> values, Double average) {
+	Double calculateMB2(ArrayList<Double> values, Double average) {
 
-		Double pSum = 0.0;
+		Double outterSum = 0.0;
+		Double innerSum = 0.0;
 
 		for (Double v1 : values) {
+			innerSum = 0.0;
 			for (Double v2 : values) {
-				pSum += Math.abs(v1 - v2);
+				innerSum += Math.abs(v1 - v2);
 			}
+			outterSum += innerSum;
 		}
 
-		return average - (1/(2*values.size()^2));
+		return average - (outterSum/(2*values.size()^2));
 	}
 }

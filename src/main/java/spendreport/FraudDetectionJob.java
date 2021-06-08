@@ -40,7 +40,8 @@ public class FraudDetectionJob {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
-		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
+//		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
+		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
 				.flatMap(new Splitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
