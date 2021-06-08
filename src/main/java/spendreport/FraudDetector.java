@@ -25,15 +25,19 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 
 public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>, Tuple7<Integer, Double, Double, Double, Double, Double, Double>, Integer, GlobalWindow> {
 
 	private static final long serialVersionUID = 1L;
+	private static int val0_window_counter = 0;
+	private static int val1_window_counter = 0;
+	private static int val2_window_counter = 0;
+	private static int val3_window_counter = 0;
+	private static int val4_window_counter = 0;
+	private static int val5_window_counter = 0;
 
 
 	@Override
@@ -65,7 +69,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			return;
 		}
 
-		System.out.println("window (" + values.size() + ") : " + values.toString());
+		//System.out.println("window (size: " + values.size() + ") : " + values.toString());
 
 		a = calculateAverage(values);
 		b = calculateMedian(values);
@@ -75,6 +79,39 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		f = calculateF(values, a);
 
 //		out.collect("Window: " + context.window() + "count: " + count);
+		switch (key){
+			case 0: {
+				FraudDetector.val0_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+			case 1: {
+				FraudDetector.val1_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val1_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+			case 2: {
+				FraudDetector.val2_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val2_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+			case 3: {
+				FraudDetector.val3_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val3_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+			case 4: {
+				FraudDetector.val4_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val4_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+			case 5: {
+				FraudDetector.val5_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
+		}
+
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));
 	}
 
@@ -86,6 +123,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 
 			sum += v;
 		}
+
+		//System.out.println("values hash: " + values.hashCode() + " average sum: " + sum + ", size: " + values.size() + ", mean: " + sum/values.size());
 
 		return sum/values.size();
 	}

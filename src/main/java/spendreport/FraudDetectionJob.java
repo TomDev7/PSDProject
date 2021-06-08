@@ -39,17 +39,18 @@ public class FraudDetectionJob {
 
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		// test
-		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources/mock_data.csv")
+
+		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
 				.flatMap(new Splitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
 				.process(new FraudDetector());
-		// end test
 
-		System.out.println("dataStream: ");
-		System.out.println(dataStream.toString());
-		dataStream.print();
+		//System.out.println("Results: " + dataStream.print());
+
+		//System.out.println("dataStream: ");
+		//System.out.println(dataStream.toString());
+		//dataStream.print();
 
 //		DataStream<Alert> alerts = dataStream
 //				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
@@ -68,7 +69,6 @@ public class FraudDetectionJob {
 //				.trigger(CountTrigger.of(slide));
 //	}
 
-	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
 	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Double>> {
 
 		@Override
