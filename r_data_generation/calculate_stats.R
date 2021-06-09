@@ -1,7 +1,7 @@
 wallet <- c(0.2, 0.2, 0.2, 0.15, 0.15, 0.1)
 
-returnRates <- read.csv(file = 'result_1M.csv')
-returnRates <- subset(returnRates, select = c(V1, V2, V3, V4, V5, V6))
+returnRates <- read.csv(file = 'firstFrame.csv')
+# returnRates <- subset(returnRates, select = c(V1, V2, V3, V4, V5, V6))
 print(returnRates)
 
 # wybór wiersza
@@ -34,18 +34,28 @@ for(i in 1:ncol(returnRates)) {
   for(retRate in returnRates[,i]) {
     helpSum <- helpSum + abs(result.mean[i] - retRate)
   }
-  result.mb1 <- result.mean[i] - (helpSum / (2 * length(returnRates[,1])))
+
+  result.mb1[i] <- result.mean[i] - (helpSum / (2 * length(returnRates[,i])))
   # miarabezpieczeństwaopartanaśredniejróżnicyGiniego
   helpSumOuter <- 0
   helpSumInner <- 0
-  for(retRateOuter in returnRates[,1]) {
+  for(retRateOuter in returnRates[,i]) {
     helpSumInner <- 0
-    for(retRateInner in returnRates[,1]) {
+    for(retRateInner in returnRates[,i]) {
       helpSumInner <- helpSumInner + abs(retRateOuter - retRateInner)
     }
     helpSumOuter <- helpSumOuter + helpSumInner
   }
-  result.mb2 <- result.mean[i] - (helpSumOuter / (2 * length(returnRates[,1]) * length(returnRates[,1])))
+  print(i)
+  print("average")
+  print(result.mean[i])
+  print("len")
+  print(length(returnRates[,1]))
+  print("inner")
+  print(helpSumInner)
+  print("outer")
+  print(helpSumOuter)
+  result.mb2[i] <- result.mean[i] - (helpSumOuter / (2 * length(returnRates[,i]) * length(returnRates[,i])))
 }
 
 fullResult <- data.frame(result.mean, result.median, result.quantile, result.avrageOf10PercLowest, result.mb1, result.mb2)
