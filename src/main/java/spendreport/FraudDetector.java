@@ -18,14 +18,12 @@
 
 package spendreport;
 
-import com.sun.org.apache.bcel.internal.generic.BIPUSH;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
-import org.apache.flink.walkthrough.common.entity.Alert;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -57,7 +55,6 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 	@Override
 	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Double>> input, Collector<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> out) throws Exception {
 
-		//System.out.println("process window: " + context.window());
 
 		ArrayList<Double> values = new ArrayList<>();
 
@@ -78,7 +75,6 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			return;
 		}
 
-		//System.out.println("window (size: " + values.size() + ") : " + values.toString());
 		a = calculateAverage(values);
 		b = calculateMedian(values);
 		c = calculateQuantile(values, 10);	//?
@@ -86,63 +82,80 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		e = calculateMB1(values, a);
 		f = calculateMB2(values, a);
 
-//		out.collect("Window: " + context.window() + "count: " + count);
+		int currentWindow = -1;
+
 		switch (key){
 			case 0: {
 				FraudDetector.val0_window_counter += 1;
+				currentWindow = val0_window_counter;
 				System.out.println("key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 1: {
 				FraudDetector.val1_window_counter += 1;
+				currentWindow = val1_window_counter;
 				System.out.println("key: " + key + ", window no: " + val1_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 2: {
 				FraudDetector.val2_window_counter += 1;
+				currentWindow = val2_window_counter;
 				System.out.println("key: " + key + ", window no: " + val2_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 3: {
 				FraudDetector.val3_window_counter += 1;
+				currentWindow = val3_window_counter;
 				System.out.println("key: " + key + ", window no: " + val3_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 4: {
 				FraudDetector.val4_window_counter += 1;
+				currentWindow = val4_window_counter;
 				System.out.println("key: " + key + ", window no: " + val4_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 5: {
 				FraudDetector.val5_window_counter += 1;
+				currentWindow = val5_window_counter;
 				System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 6: {
 				FraudDetector.val6_window_counter += 1;
+				currentWindow = val6_window_counter;
 				System.out.println("key: " + key + ", window no: " + val6_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 		}
 
 		// sprawdzanie warunkow alarmu
-		if ((Config.A_for_all_data - a) / (1 + Config.A_for_all_data) >= Config.alert_threshold) {
+		Double a_compare_result = (Config.getInstance().getMean(key) - a) / (1 + Config.getInstance().getMean(key));
+		Double b_compare_result = (Config.getInstance().getMedian(key) - b) / (1 + Config.getInstance().getMedian(key));
+		Double c_compare_result  = (Config.getInstance().getQuantile(key) - c) / (1 + Config.getInstance().getQuantile(key));
+		Double d_compare_result = (Config.getInstance().getMean10Lowest(key) - d) / (1 + Config.getInstance().getMean10Lowest(key));
+		Double e_compare_result = (Config.getInstance().getMb1(key) - e) / (1 + Config.getInstance().getMb1(key));
+		Double f_compare_result = (Config.getInstance().getMb2(key) - f) / (1 + Config.getInstance().getMb2(key));
 
+		System.out.println("compare result mean: " + a_compare_result);
+
+		if ( a_compare_result >= Config.alert_threshold) {
+			System.out.println("Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result);
 		}
-		if ((Config.B_for_all_data - b) / (1 + Config.B_for_all_data) >= Config.alert_threshold) {
-
+		if (b_compare_result >= Config.alert_threshold) {
+			System.out.println("Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result);
 		}
-		if ((Config.C_for_all_data - c) / (1 + Config.C_for_all_data) >= Config.alert_threshold) {
-
+		if ( c_compare_result >= Config.alert_threshold) {
+			System.out.println("Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result);
 		}
-		if ((Config.D_for_all_data - d) / (1 + Config.D_for_all_data) >= Config.alert_threshold) {
-
+		if (d_compare_result >= Config.alert_threshold) {
+			System.out.println("Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result);
 		}
-		if ((Config.E_for_all_data - e) / (1 + Config.E_for_all_data) >= Config.alert_threshold) {
-
+		if (e_compare_result >= Config.alert_threshold) {
+			System.out.println("Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", asset: " + key + ", value: " + e_compare_result);
 		}
-		if ((Config.F_for_all_data - f) / (1 + Config.F_for_all_data) >= Config.alert_threshold) {
-
+		if (f_compare_result >= Config.alert_threshold) {
+			System.out.println("Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result);
 		}
 
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));

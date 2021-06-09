@@ -7,6 +7,8 @@ import java.util.Properties;
 
 public class Config {
 
+    public final static double alert_threshold = 0.1;
+
     private InputStream inputStream;
     private Properties configProperties;
     private static Config instance;

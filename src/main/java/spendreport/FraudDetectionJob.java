@@ -24,17 +24,12 @@ import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
-import org.apache.flink.walkthrough.common.entity.Alert;
-import org.apache.flink.walkthrough.common.sink.AlertSink;
 
-/**
- * Skeleton code for the datastream walkthrough
- */
+
 public class FraudDetectionJob {
 	public static void main(String[] args) throws Exception {
 
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
 
 //		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
 //						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
@@ -44,8 +39,6 @@ public class FraudDetectionJob {
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
 				.process(new FraudDetector());
-
-
 
 		env.execute("Data analyse");
 	}
