@@ -25,6 +25,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
+import org.apache.flink.walkthrough.common.entity.Alert;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -43,7 +44,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 	private static int val3_window_counter = 0;
 	private static int val4_window_counter = 0;
 	private static int val5_window_counter = 0;
-	private static int val999_window_counter = 0;
+	private static int val6_window_counter = 0;	// portfel
 
 
 
@@ -117,11 +118,31 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
-			case 999: {
-				FraudDetector.val999_window_counter += 1;
-				System.out.println("key: " + key + ", window no: " + val999_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+			case 6: {
+				FraudDetector.val6_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val6_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
+		}
+
+		// sprawdzanie warunkow alarmu
+		if ((Config.A_for_all_data - a) / (1 + Config.A_for_all_data) >= Config.alert_threshold) {
+
+		}
+		if ((Config.B_for_all_data - b) / (1 + Config.B_for_all_data) >= Config.alert_threshold) {
+
+		}
+		if ((Config.C_for_all_data - c) / (1 + Config.C_for_all_data) >= Config.alert_threshold) {
+
+		}
+		if ((Config.D_for_all_data - d) / (1 + Config.D_for_all_data) >= Config.alert_threshold) {
+
+		}
+		if ((Config.E_for_all_data - e) / (1 + Config.E_for_all_data) >= Config.alert_threshold) {
+
+		}
+		if ((Config.F_for_all_data - f) / (1 + Config.F_for_all_data) >= Config.alert_threshold) {
+
 		}
 
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));

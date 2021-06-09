@@ -20,16 +20,12 @@ package spendreport;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple6;
 import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingTimeWindows;
 import org.apache.flink.util.Collector;
-import org.apache.flink.walkthrough.common.sink.AlertSink;
 import org.apache.flink.walkthrough.common.entity.Alert;
-import org.apache.flink.walkthrough.common.entity.Transaction;
-import org.apache.flink.walkthrough.common.source.TransactionSource;
+import org.apache.flink.walkthrough.common.sink.AlertSink;
 
 /**
  * Skeleton code for the datastream walkthrough
@@ -40,39 +36,21 @@ public class FraudDetectionJob {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
-//		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
+//		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
+//						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
 		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile(
-				"/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
-						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
-				.flatMap(new Splitter())
+				"/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
+				.flatMap(new DataSplitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
 				.process(new FraudDetector());
 
-		//System.out.println("Results: " + dataStream.print());
-
-		//System.out.println("dataStream: ");
-		//System.out.println(dataStream.toString());
-		//dataStream.print();
-
-//		DataStream<Alert> alerts = dataStream
-//				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
-//				.name("data-analyser");
-//
-//		alerts.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
-//				.name("data-analyse-alerts");
 
 
 		env.execute("Data analyse");
 	}
 
-//	public WindowedStream<T, KEY, GlobalWindow> countWindow(long size, long slide) {
-//		return window(GlobalWindows.create())
-//				.evictor(CountEvictor.of(size))
-//				.trigger(CountTrigger.of(slide));
-//	}
-
-	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Double>> {
+	public static class DataSplitter implements FlatMapFunction<String, Tuple2<Integer, Double>> {
 
 		@Override
 		public void flatMap(String text, Collector<Tuple2<Integer, Double>> output) throws Exception {
