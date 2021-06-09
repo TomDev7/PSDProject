@@ -41,7 +41,9 @@ public class FraudDetectionJob {
 
 
 //		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
-		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources/mock_data.csv")	//TODO zmienic sciezke dla obecnej maszyny
+		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile(
+				"/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
+						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
 				.flatMap(new Splitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
@@ -75,12 +77,20 @@ public class FraudDetectionJob {
 		@Override
 		public void flatMap(String text, Collector<Tuple2<Integer, Double>> output) throws Exception {
 
+			Double sumOfAllItemsInRow = 0.0;
+			Double itemInRow = 0.0;
 			for (String line: text.split("\n")) {
 
 				String[] elements = line.split(",");
 				for (int i = 0; i < elements.length; i++) {
-					output.collect(Tuple2.of(Integer.valueOf(i), Double.valueOf(elements[i])));
+					itemInRow = Double.valueOf(elements[i]);
+					// TODO modify sum to some proper calculation
+					sumOfAllItemsInRow += itemInRow;
+					output.collect(Tuple2.of(Integer.valueOf(i), itemInRow));
 				}
+
+				output.collect(Tuple2.of(Integer.valueOf(999), itemInRow));
+
 			}
 		}
 	}

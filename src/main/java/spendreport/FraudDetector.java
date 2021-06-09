@@ -43,6 +43,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 	private static int val3_window_counter = 0;
 	private static int val4_window_counter = 0;
 	private static int val5_window_counter = 0;
+	private static int val999_window_counter = 0;
+
 
 
 	@Override
@@ -76,7 +78,6 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		}
 
 		//System.out.println("window (size: " + values.size() + ") : " + values.toString());
-
 		a = calculateAverage(values);
 		b = calculateMedian(values);
 		c = calculateQuantile(values, 10);	//?
@@ -116,6 +117,11 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
+			case 999: {
+				FraudDetector.val999_window_counter += 1;
+				System.out.println("key: " + key + ", window no: " + val999_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				break;
+			}
 		}
 
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));
@@ -130,42 +136,40 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			sum += v;
 		}
 
-		//System.out.println("values hash: " + values.hashCode() + " average sum: " + sum + ", size: " + values.size() + ", mean: " + sum/values.size());
-
 		return sum/values.size();
 	}
 
 	Double calculateMedian(ArrayList<Double> values) {
 
-		Collections.sort(values);
+		ArrayList<Double> copy = new ArrayList<>();
+		copy.addAll(values);
+		Collections.sort(copy);
 
-		int middle = values.size() / 2;
-		if (values.size()%2 == 1) {
-			return values.get(middle);
+		int middle = copy.size() / 2;
+		if (copy.size()%2 == 1) {
+			return copy.get(middle);
 		} else {
-			return (values.get(middle-1) + values.get(middle)) / 2.0f;
+			return (copy.get(middle-1) + copy.get(middle)) / 2.0f;
 		}
 	}
 
 	Double calculateQuantile(ArrayList<Double> values, int quantile) {
 
 		double quantile10 = percentiles().index(quantile).compute(values);
-//		Collections.sort(values);
-//		Double position = ( values.size() * quantile);
-//		int intPos = (int) Math.round(position);
-
 		return quantile10;
 	}
 
 	Double calculateAverageOfLower10Perc(ArrayList<Double> values) {
 
-		Collections.sort(values);
-		int lower10PercValuesIdx = values.size() / 10;
+		ArrayList<Double> copy = new ArrayList<>();
+		copy.addAll(values);
+		Collections.sort(copy);
+		int lower10PercValuesIdx = copy.size() / 10;
 
 		Double sum = 0.0;
 
 		for (int i = 0; i < lower10PercValuesIdx; i++) {
-			sum += values.get(i);
+			sum += copy.get(i);
 		}
 
 		return sum/lower10PercValuesIdx;
@@ -182,31 +186,33 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			abs = averageBD.subtract(val).abs();
 			pSum = pSum.add(abs);
 		}
+
 		BigDecimal result = averageBD.subtract(pSum.divide(BigDecimal.valueOf(2*values.size()), 10, RoundingMode.HALF_UP));
 		return result.doubleValue();
-//		Double pSum = 0.0;
-//
-//		for (Double v : values) {
-//
-//			pSum = pSum + Math.abs(average - v);
-//		}
-//
-//		return average - (pSum/(2*values.size()));
 	}
 
 	Double calculateMB2(ArrayList<Double> values, Double average) {
 
-		Double outterSum = 0.0;
-		Double innerSum = 0.0;
-
-		for (Double v1 : values) {
-			innerSum = 0.0;
-			for (Double v2 : values) {
-				innerSum += Math.abs(v1 - v2);
+		BigDecimal outterSum = new BigDecimal(0);
+		BigDecimal innerSum = new BigDecimal(0);
+		BigDecimal valOut = null;
+		BigDecimal valIn = null;
+		BigDecimal abs = null;
+		BigDecimal averageBD = new BigDecimal(average);
+		for(Double v: values) {
+			valOut = new BigDecimal(v);
+			innerSum = new BigDecimal(0);
+			for(Double v2: values) {
+				valIn = new BigDecimal(v2);
+				abs = valOut.subtract(valIn).abs();
+				innerSum = innerSum.add(abs);
 			}
-			outterSum += innerSum;
+			outterSum = outterSum.add(innerSum);
 		}
 
-		return average - (outterSum/(2*values.size()^2));
+		BigDecimal result = averageBD.subtract(outterSum.divide(BigDecimal.valueOf(2*values.size()*values.size()), 10,
+				RoundingMode.HALF_UP));
+		return result.doubleValue();
+
 	}
 }

@@ -1,2 +1,4 @@
 # Project exclude paths
 /target/
+frauddetection.iml
+dependency-reduced-pom.xml
