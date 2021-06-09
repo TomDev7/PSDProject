@@ -10,18 +10,18 @@ public class Config {
     public final static double alert_threshold = 0.1;
 
     private InputStream inputStream;
-    private Properties configProperties;
+    private static Properties configProperties;
     private static Config instance;
 
     private Config() throws IOException {
         try {
-            Properties prop = new Properties();
+            configProperties = new Properties();
             String propFileName = "config.properties";
 
             inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
 
             if (inputStream != null) {
-                prop.load(inputStream);
+                configProperties.load(inputStream);
             } else {
                 throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
             }
