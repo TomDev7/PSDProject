@@ -20,64 +20,44 @@ package spendreport;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple6;
+import org.apache.flink.api.java.tuple.Tuple7;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingTimeWindows;
 import org.apache.flink.util.Collector;
-import org.apache.flink.walkthrough.common.sink.AlertSink;
-import org.apache.flink.walkthrough.common.entity.Alert;
-import org.apache.flink.walkthrough.common.entity.Transaction;
-import org.apache.flink.walkthrough.common.source.TransactionSource;
 
-/**
- * Skeleton code for the datastream walkthrough
- */
+import java.io.File;
+import java.io.FileWriter;
+
+
 public class FraudDetectionJob {
 	public static void main(String[] args) throws Exception {
 
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		// test
-		DataStream<Tuple2<Integer, Float>> dataStream = env.readTextFile("/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
-				.flatMap(new Splitter())
+//		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
+//						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
+		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile(
+				"/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/result_50K.csv")
+				.flatMap(new DataSplitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)
 				.process(new FraudDetector());
-		// end test
-
-		System.out.println("dataStream: ");
-		System.out.println(dataStream.toString());
-		dataStream.print();
-
-//		DataStream<Alert> alerts = dataStream
-//				.process(new FraudDetector())	//na każdej z tych grup uruchomienie przetwarzania FraudDetectorem (bo to równoległe przetwarzanie na każdej z grup)
-//				.name("data-analyser");
-//
-//		alerts.addSink(new AlertSink())	// czyli sink może być 'customowy'? np wysyłanie gdzieś po REST API
-//				.name("data-analyse-alerts");
-
 
 		env.execute("Data analyse");
 	}
 
-//	public WindowedStream<T, KEY, GlobalWindow> countWindow(long size, long slide) {
-//		return window(GlobalWindows.create())
-//				.evictor(CountEvictor.of(size))
-//				.trigger(CountTrigger.of(slide));
-//	}
-
-	//TODO a może by tak wszystko przenieść tutaj, i bez wgl drugiego pliku .java opylić? wtedy pewnie wykoana się bez zrównoleglenia... ale kto wie
-	public static class Splitter implements FlatMapFunction<String, Tuple2<Integer, Float>> {
+	public static class DataSplitter implements FlatMapFunction<String, Tuple2<Integer, Double>> {
 
 		@Override
-		public void flatMap(String text, Collector<Tuple2<Integer, Float>> output) throws Exception {
+		public void flatMap(String text, Collector<Tuple2<Integer, Double>> output) throws Exception {
 
+			Double itemInRow = 0.0;
 			for (String line: text.split("\n")) {
 
-				String[] elements = line.split(";");
+				String[] elements = line.split(",");
 				for (int i = 0; i < elements.length; i++) {
-					output.collect(Tuple2.of(Integer.valueOf(i), Float.valueOf(elements[i])));
+					itemInRow = Double.valueOf(elements[i]);
+					output.collect(Tuple2.of(Integer.valueOf(i), itemInRow));
 				}
 			}
 		}
