@@ -146,32 +146,32 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 
 		System.out.println("compare result mean: " + a_compare_result);
 
-		if ( a_compare_result >= Config.alert_threshold) {
+		if ( a_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report = "Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
 		}
-		if (b_compare_result >= Config.alert_threshold) {
+		if (b_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report = "Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
 		}
-		if ( c_compare_result >= Config.alert_threshold) {
+		if ( c_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report ="Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
 		}
-		if (d_compare_result >= Config.alert_threshold) {
+		if (d_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report = "Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
 		}
-		if (e_compare_result >= Config.alert_threshold) {
+		if (e_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report = "Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + e_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
 		}
-		if (f_compare_result >= Config.alert_threshold) {
+		if (f_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String report = "Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result;
 			System.out.println(report);
 			printToFile(report, key);
@@ -269,14 +269,14 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 
 	}
 
-	int printToFile(String text, int key) throws IOException {
+	int printToFile(String text, int key) throws Exception {
 
 		String fileName = "default_reports.txt";
 		switch (key){
 			case 0: {
 				fileName = "val0_reports_" + filenameCounters[0] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[0]++;
 					fileName = "val0_reports_" + filenameCounters[0] + ".txt";
 				}
@@ -285,7 +285,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 1: {
 				fileName = "val1_reports_" + filenameCounters[1] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[1]++;
 					fileName = "val1_reports_" + filenameCounters[1] + ".txt";
 				}
@@ -294,7 +294,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 2: {
 				fileName = "val2_reports_" + filenameCounters[2] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[2]++;
 					fileName = "val2_reports_" + filenameCounters[2] + ".txt";
 				}
@@ -303,7 +303,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 3: {
 				fileName = "val3_reports_" + filenameCounters[3] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[3]++;
 					fileName = "val3_reports_" + filenameCounters[3] + ".txt";
 				}				break;
@@ -311,7 +311,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 4: {
 				fileName = "val4_reports_" + filenameCounters[4] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[4]++;
 					fileName = "val4_reports_" + filenameCounters[4] + ".txt";
 				}
@@ -320,7 +320,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 5: {
 				fileName = "val5_reports_" + filenameCounters[5] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[5]++;
 					fileName = "val5_reports_" + filenameCounters[5] + ".txt";
 				}				break;
@@ -328,7 +328,7 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 6: {
 				fileName = "val6_reports_" + filenameCounters[6] + ".txt";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
-				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[6]++;
 					fileName = "val6_reports_" + filenameCounters[6] + ".txt";
 				}				break;

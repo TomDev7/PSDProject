@@ -7,9 +7,6 @@ import java.util.Properties;
 
 public class Config {
 
-    public final static double alert_threshold = 0.1;
-    public final static int fileSizeLimit = 1024*1024;    //bytes
-
     private InputStream inputStream;
     private static Properties configProperties;
     private static Config instance;
@@ -74,5 +71,17 @@ public class Config {
         String key = String.valueOf(columnNbr) + "_mb2";
         String mb2 = (String) this.configProperties.getOrDefault(key, "0");
         return Double.parseDouble(mb2);
+    }
+
+    public int getFileSizeLimit() {
+        String key = "file_size_limit";
+        String fileSizeLimit = (String) this.configProperties.getOrDefault(key, "1024");
+        return Integer.parseInt(fileSizeLimit);
+    }
+
+    public Double getAlertThreshold() {
+        String key = "alert_threshold";
+        String alertThreshold = (String) this.configProperties.getOrDefault(key, "0.1");
+        return Double.parseDouble(alertThreshold);
     }
 }
