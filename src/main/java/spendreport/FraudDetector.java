@@ -144,37 +144,41 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		Double e_compare_result = (Config.getInstance().getMb1(key) - e) / (1 + Config.getInstance().getMb1(key));
 		Double f_compare_result = (Config.getInstance().getMb2(key) - f) / (1 + Config.getInstance().getMb2(key));
 
-		System.out.println("compare result mean: " + a_compare_result);
-
 		if ( a_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report = "Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout = "Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result;
+			String reportToFile = "Mean" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 		if (b_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report = "Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout = "Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result;
+			String reportToFile = "Median" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 		if ( c_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report ="Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout ="Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result;
+			String reportToFile = "Quantile" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 		if (d_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report = "Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout = "Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result;
+			String reportToFile = "Mean10Lowest" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 		if (e_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report = "Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + e_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout = "Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + e_compare_result;
+			String reportToFile = "Mb1" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 		if (f_compare_result >= Config.getInstance().getAlertThreshold()) {
-			String report = "Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result;
-			System.out.println(report);
-			printToFile(report, key);
+			String reportToStdout = "Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result;
+			String reportToFile = "Mb2" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			System.out.println(reportToStdout);
+			printToFile(reportToFile, key);
 		}
 
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));
@@ -274,63 +278,63 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		String fileName = "default_reports.txt";
 		switch (key){
 			case 0: {
-				fileName = "val0_reports_" + filenameCounters[0] + ".txt";
+				fileName = "val0_reports_" + filenameCounters[0] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[0]++;
-					fileName = "val0_reports_" + filenameCounters[0] + ".txt";
+					fileName = "val0_reports_" + filenameCounters[0] + ".csv";
 				}
 				break;
 			}
 			case 1: {
-				fileName = "val1_reports_" + filenameCounters[1] + ".txt";
+				fileName = "val1_reports_" + filenameCounters[1] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[1]++;
-					fileName = "val1_reports_" + filenameCounters[1] + ".txt";
+					fileName = "val1_reports_" + filenameCounters[1] + ".csv";
 				}
 				break;
 			}
 			case 2: {
-				fileName = "val2_reports_" + filenameCounters[2] + ".txt";
+				fileName = "val2_reports_" + filenameCounters[2] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[2]++;
-					fileName = "val2_reports_" + filenameCounters[2] + ".txt";
+					fileName = "val2_reports_" + filenameCounters[2] + ".csv";
 				}
 				break;
 			}
 			case 3: {
-				fileName = "val3_reports_" + filenameCounters[3] + ".txt";
+				fileName = "val3_reports_" + filenameCounters[3] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[3]++;
-					fileName = "val3_reports_" + filenameCounters[3] + ".txt";
+					fileName = "val3_reports_" + filenameCounters[3] + ".csv";
 				}				break;
 			}
 			case 4: {
-				fileName = "val4_reports_" + filenameCounters[4] + ".txt";
+				fileName = "val4_reports_" + filenameCounters[4] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[4]++;
-					fileName = "val4_reports_" + filenameCounters[4] + ".txt";
+					fileName = "val4_reports_" + filenameCounters[4] + ".csv";
 				}
 				break;
 			}
 			case 5: {
-				fileName = "val5_reports_" + filenameCounters[5] + ".txt";
+				fileName = "val5_reports_" + filenameCounters[5] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[5]++;
-					fileName = "val5_reports_" + filenameCounters[5] + ".txt";
+					fileName = "val5_reports_" + filenameCounters[5] + ".csv";
 				}				break;
 			}
 			case 6: {
-				fileName = "val6_reports_" + filenameCounters[6] + ".txt";
+				fileName = "val6_reports_" + filenameCounters[6] + ".csv";
 				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[6]++;
-					fileName = "val6_reports_" + filenameCounters[6] + ".txt";
+					fileName = "val6_reports_" + filenameCounters[6] + ".csv";
 				}				break;
 			}
 		}
@@ -340,6 +344,11 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		PrintWriter printWriter = new PrintWriter(fileWriter, true);
 		printWriter.println(text);
 		printWriter.close();
+
+		/*
+		* format pliku csv:
+		* String: statystyka ; Integer: window (ktore okno) ; Integer: key (ktore aktywo) ; Double: wynik porownania z progiem alertu
+		* */
 
 		return 0;
 	}
