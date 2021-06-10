@@ -25,6 +25,10 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.util.Collector;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -43,6 +47,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 	private static int val4_window_counter = 0;
 	private static int val5_window_counter = 0;
 	private static int val6_window_counter = 0;	// portfel
+
+	private static int filenameCounters[] = {0,0,0,0,0,0,0};
 
 
 
@@ -88,7 +94,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 0: {
 				FraudDetector.val0_window_counter += 1;
 				currentWindow = val0_window_counter;
-				System.out.println("key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				String report = "key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f;
+				System.out.println(report);
 				break;
 			}
 			case 1: {
@@ -140,22 +147,34 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		System.out.println("compare result mean: " + a_compare_result);
 
 		if ( a_compare_result >= Config.alert_threshold) {
-			System.out.println("Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result);
+			String report = "Mean value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + a_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 		if (b_compare_result >= Config.alert_threshold) {
-			System.out.println("Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result);
+			String report = "Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 		if ( c_compare_result >= Config.alert_threshold) {
-			System.out.println("Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result);
+			String report ="Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 		if (d_compare_result >= Config.alert_threshold) {
-			System.out.println("Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result);
+			String report = "Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 		if (e_compare_result >= Config.alert_threshold) {
-			System.out.println("Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", asset: " + key + ", value: " + e_compare_result);
+			String report = "Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + e_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 		if (f_compare_result >= Config.alert_threshold) {
-			System.out.println("Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result);
+			String report = "Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result;
+			System.out.println(report);
+			printToFile(report, key);
 		}
 
 		out.collect(Tuple7.of(key, a, b, c, d, e, f));
@@ -248,5 +267,80 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				RoundingMode.HALF_UP));
 		return result.doubleValue();
 
+	}
+
+	int printToFile(String text, int key) throws IOException {
+
+		String fileName = "default_reports.txt";
+		switch (key){
+			case 0: {
+				fileName = "val0_reports_" + filenameCounters[0] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[0]++;
+					fileName = "val0_reports_" + filenameCounters[0] + ".txt";
+				}
+				break;
+			}
+			case 1: {
+				fileName = "val1_reports_" + filenameCounters[1] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[1]++;
+					fileName = "val1_reports_" + filenameCounters[1] + ".txt";
+				}
+				break;
+			}
+			case 2: {
+				fileName = "val2_reports_" + filenameCounters[2] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[2]++;
+					fileName = "val2_reports_" + filenameCounters[2] + ".txt";
+				}
+				break;
+			}
+			case 3: {
+				fileName = "val3_reports_" + filenameCounters[3] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[3]++;
+					fileName = "val3_reports_" + filenameCounters[3] + ".txt";
+				}				break;
+			}
+			case 4: {
+				fileName = "val4_reports_" + filenameCounters[4] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[4]++;
+					fileName = "val4_reports_" + filenameCounters[4] + ".txt";
+				}
+				break;
+			}
+			case 5: {
+				fileName = "val5_reports_" + filenameCounters[5] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[5]++;
+					fileName = "val5_reports_" + filenameCounters[5] + ".txt";
+				}				break;
+			}
+			case 6: {
+				fileName = "val6_reports_" + filenameCounters[6] + ".txt";
+				File file = new File("/home/george/Pulpit/Projekt PSD/" + fileName);
+				if (file.exists() && file.isFile() && file.length() > Config.fileSizeLimit){
+					filenameCounters[6]++;
+					fileName = "val6_reports_" + filenameCounters[6] + ".txt";
+				}				break;
+			}
+		}
+
+		String filePath = "/home/george/Pulpit/Projekt PSD/" + fileName;
+		FileWriter fileWriter = new FileWriter(filePath, true);
+		PrintWriter printWriter = new PrintWriter(fileWriter, true);
+		printWriter.println(text);
+		printWriter.close();
+
+		return 0;
 	}
 }

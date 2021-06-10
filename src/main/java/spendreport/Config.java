@@ -8,6 +8,7 @@ import java.util.Properties;
 public class Config {
 
     public final static double alert_threshold = 0.1;
+    public final static int fileSizeLimit = 1024*1024;    //bytes
 
     private InputStream inputStream;
     private static Properties configProperties;
