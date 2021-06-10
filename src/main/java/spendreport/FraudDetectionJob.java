@@ -25,9 +25,6 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.util.Collector;
 
-import java.io.File;
-import java.io.FileWriter;
-
 
 public class FraudDetectionJob {
 	public static void main(String[] args) throws Exception {
