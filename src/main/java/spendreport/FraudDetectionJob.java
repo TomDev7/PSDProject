@@ -37,7 +37,7 @@ public class FraudDetectionJob {
 //		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile("/Users/bartoszcybulski/Documents/workspaces/java_workspace/psd_projekt/PSDProject/src/main/resources" +
 //						"/mock_data_short.csv")	//TODO zmienic sciezke dla obecnej maszyny
 		DataStream<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> dataStream = env.readTextFile(
-				"/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/mock_data.csv")
+				"/home/george/Pulpit/Projekt PSD/PSDProject/src/main/resources/result_50K.csv")
 				.flatMap(new DataSplitter())
 				.keyBy(value -> value.f0)
 				.countWindow(30, 1)

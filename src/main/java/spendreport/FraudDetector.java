@@ -27,7 +27,6 @@ import org.apache.flink.util.Collector;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -61,7 +60,6 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 	@Override
 	public void process(Integer key, Context context, Iterable<Tuple2<Integer, Double>> input, Collector<Tuple7<Integer, Double, Double, Double, Double, Double, Double>> out) throws Exception {
 
-
 		ArrayList<Double> values = new ArrayList<>();
 
 		// Wartosci ponizej odpowiadaja nazwami podpunktom z zadania
@@ -94,46 +92,49 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 			case 0: {
 				FraudDetector.val0_window_counter += 1;
 				currentWindow = val0_window_counter;
-				String report = "key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f;
-				System.out.println(report);
+				//System.out.println("key: " + key + ", window no: " + val0_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 1: {
 				FraudDetector.val1_window_counter += 1;
 				currentWindow = val1_window_counter;
-				System.out.println("key: " + key + ", window no: " + val1_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val1_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 2: {
 				FraudDetector.val2_window_counter += 1;
 				currentWindow = val2_window_counter;
-				System.out.println("key: " + key + ", window no: " + val2_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val2_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 3: {
 				FraudDetector.val3_window_counter += 1;
 				currentWindow = val3_window_counter;
-				System.out.println("key: " + key + ", window no: " + val3_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val3_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 4: {
 				FraudDetector.val4_window_counter += 1;
 				currentWindow = val4_window_counter;
-				System.out.println("key: " + key + ", window no: " + val4_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val4_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 5: {
 				FraudDetector.val5_window_counter += 1;
 				currentWindow = val5_window_counter;
-				System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val5_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
 			case 6: {
 				FraudDetector.val6_window_counter += 1;
 				currentWindow = val6_window_counter;
-				System.out.println("key: " + key + ", window no: " + val6_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
+				//System.out.println("key: " + key + ", window no: " + val6_window_counter + ", a: " + a + ", b: " + b + ", c: " + c + ", d: " + d + ", e: " + e + ", f: " + f);
 				break;
 			}
+		}
+
+		if (currentWindow % 1000 == 0) {
+			System.out.println("processing window: " + currentWindow);
 		}
 
 		// sprawdzanie warunkow alarmu
@@ -152,31 +153,31 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 		}
 		if (b_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String reportToStdout = "Median value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + b_compare_result;
-			String reportToFile = "Median" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			String reportToFile = "Median" +";"+ currentWindow +";"+ key +";"+ b_compare_result;
 			System.out.println(reportToStdout);
 			printToFile(reportToFile, key);
 		}
 		if ( c_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String reportToStdout ="Quantile value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + c_compare_result;
-			String reportToFile = "Quantile" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			String reportToFile = "Quantile" +";"+ currentWindow +";"+ key +";"+ c_compare_result;
 			System.out.println(reportToStdout);
 			printToFile(reportToFile, key);
 		}
 		if (d_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String reportToStdout = "Mean10Lowest value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + d_compare_result;
-			String reportToFile = "Mean10Lowest" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			String reportToFile = "Mean10Lowest" +";"+ currentWindow +";"+ key +";"+ d_compare_result;
 			System.out.println(reportToStdout);
 			printToFile(reportToFile, key);
 		}
 		if (e_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String reportToStdout = "Mb1 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + e_compare_result;
-			String reportToFile = "Mb1" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			String reportToFile = "Mb1" +";"+ currentWindow +";"+ key +";"+ e_compare_result;
 			System.out.println(reportToStdout);
 			printToFile(reportToFile, key);
 		}
 		if (f_compare_result >= Config.getInstance().getAlertThreshold()) {
 			String reportToStdout = "Mb2 value exceeded alert threshold. Window: " + currentWindow + ", asset: " + key + ", value: " + f_compare_result;
-			String reportToFile = "Mb2" +";"+ currentWindow +";"+ key +";"+ a_compare_result;
+			String reportToFile = "Mb2" +";"+ currentWindow +";"+ key +";"+ f_compare_result;
 			System.out.println(reportToStdout);
 			printToFile(reportToFile, key);
 		}
@@ -310,7 +311,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[3]++;
 					fileName = "val3_reports_" + filenameCounters[3] + ".csv";
-				}				break;
+				}
+				break;
 			}
 			case 4: {
 				fileName = "val4_reports_" + filenameCounters[4] + ".csv";
@@ -327,7 +329,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[5]++;
 					fileName = "val5_reports_" + filenameCounters[5] + ".csv";
-				}				break;
+				}
+				break;
 			}
 			case 6: {
 				fileName = "val6_reports_" + filenameCounters[6] + ".csv";
@@ -335,7 +338,8 @@ public class FraudDetector extends ProcessWindowFunction<Tuple2<Integer, Double>
 				if (file.exists() && file.isFile() && file.length() > Config.getInstance().getFileSizeLimit()){
 					filenameCounters[6]++;
 					fileName = "val6_reports_" + filenameCounters[6] + ".csv";
-				}				break;
+				}
+				break;
 			}
 		}
 
